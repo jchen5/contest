@@ -87,6 +87,7 @@ class JudgeConfigContest {
     $.ajaxSetup({
       url: "handle.php",
       type: "post",
+      jsonp: false,
       processData: false,
       dataType: "json"
     });
@@ -157,10 +158,11 @@ class JudgeConfigContest {
 </head>
 <body>
 <div align="center">
-  <h1>Judge Contest Configuration</h1>
-</div>
+<h1>Judge Contest Configuration</h1>
+<?php
+print judgeLinkPanel();
+?>
 <hr>
-<div align="center">
 <p><b><big>Modifying Contests of Type 
 <select id="contest_type">
 <?php

@@ -5,14 +5,18 @@ class DebugProblemConfigMetadata extends ProblemConfigMetadata {
 
   public function __construct($problem_id, $division_id, $contest_id, $metadata, $division_metadata) {
     parent::__construct($problem_id, $division_id, $contest_id, $metadata, $division_metadata);
+    $this->needs_update = false;
     if (!isset($this->division_metadata['points'])) {
       $this->division_metadata['points'] = 0;
+      $this->needs_update = true;
     }
     if (!isset($this->division_metadata['type'])) {
       $this->division_metadata['type'] = 'correct';
+      $this->needs_update = true;
     }
     if (!isset($this->metadata['judge_io'])) {
       $this->metadata['judge_io'] = array();
+      $this->needs_update = true;
     }
   }
 
@@ -45,6 +49,20 @@ class DebugProblemConfigMetadata extends ProblemConfigMetadata {
       }
     });
   });
+  
+<?php
+  if ($this->needs_update) {
+?>
+  $.ajax({
+    data: JSON.stringify({'action' : 'modify_problem', 'problem_id' : problemID, 'division_id' : divisionID, 'contest_id' : contestID, 'key' : 'division_metadata', 'value' : JSON.stringify(divisionMetadata)})
+  });
+  $.ajax({
+    data: JSON.stringify({'action' : 'modify_problem', 'problem_id' : problemID, 'division_id' : divisionID, 'contest_id' : contestID, 'key' : 'metadata', 'value' : JSON.stringify(metadata)})
+  });
+<?php
+  }
+?>
+
   $("#<?= $downloadZipID ?>").click(function() {
     window.location.href = "handlefile.php?action=download_debug_zip&problem_id=" + problemID + "&division_id=" + divisionID + "&contest_id=" + contestID;
   });
@@ -77,6 +95,7 @@ class DebugProblemConfigMetadata extends ProblemConfigMetadata {
         <input type="hidden" name="contest_id" value="<?= $this->contest_id ?>"></input>
         <input type="hidden" name="action" value="upload_interactive_grader"></input>
         <br />
+        <iframe name="<?= $uploadFrameID ?>" style="width: 300px; height: 30px; border: 0px;"></iframe>
       </form>
     </td>
   </tr>

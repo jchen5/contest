@@ -3,6 +3,19 @@ require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' .
 
 class SpeedJudgeLoadHandler extends JudgeLoadHandler {
   
+  public function view_submission() {
+    if (isset($_REQUEST['contest_id']) && isset($_REQUEST['run_id'])) {
+      $contest_id = $_REQUEST['contest_id'];
+      $run_id = $_REQUEST['run_id'];
+      $run = DBManager::getRun($contest_id, $run_id);
+      $payload = $run['payload'];
+      $metadata = json_decode($run['run_metadata'], true);
+      $filename = $run['problem_alias'] . '.' . $metadata['extension'];
+      $this->writeDownloadHeader($filename, strlen($payload));
+      print $payload;
+    }
+  }
+  
   public function download_speed_zip() {
     if (isset($_REQUEST['contest_id']) && isset($_REQUEST['division_id']) && isset($_REQUEST['problem_id'])) {
       $contest_id = $_REQUEST['contest_id'];
@@ -150,7 +163,6 @@ class SpeedJudgeLoadHandler extends JudgeLoadHandler {
   }
   
   public function upload_interactive_grader() {
-    
     if (isset($_FILES['upload_file']) && $_FILES['upload_file']['size'] > 0) {
       $tmpname = $_FILES['upload_file']['tmp_name'];
       if (isset($_REQUEST['contest_id']) && isset($_REQUEST['problem_id'])) {
@@ -180,7 +192,7 @@ class SpeedJudgeLoadHandler extends JudgeLoadHandler {
             $payload = fread($file, filesize($tmpname));  
             fclose($file);
             
-            $metadata['grader'] = array('src' => $payload, 'filebase' => $filebase, 'extension' => $extension);
+            $metadata['grader'] = array('valid' => true, 'src' => $payload, 'filebase' => $filebase, 'extension' => $extension);
             DBManager::modifyProblem($problem_id, 'metadata', json_encode($metadata));
             print 'Grader updated.<br />';
           }

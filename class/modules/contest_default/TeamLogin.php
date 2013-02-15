@@ -23,21 +23,22 @@ class TeamLogin {
       header('Location: index.php');
     }
     else {
-      array_push($bodyHTML, '<font color="red"><p>Invalid username or password!</p></font>');
+      array_push($bodyHTML, '<div class="login_error">Invalid username or password!</div>');
     }
   }
   // Otherwise log the team out
   else if (isset($_SESSION['login']))
   {
     unset($_SESSION['login']);
-    array_push($bodyHTML, '<p><b><big>Now logged out.</big></b></p>');
+    array_push($bodyHTML, '<div class="login_message">Now logged out.</div>');
   }
 ?>
 <!doctype html>
 <html>
 <head>
 <title>Log In</title>
-<link href="main.css" rel="stylesheet" type="text/css">
+<link href="/css/reset.css" rel="stylesheet" type="text/css">
+<link href="/css/login.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
 
 <?php
@@ -45,8 +46,25 @@ class TeamLogin {
 ?>
 <script type="text/javascript">
 (function ($) {
+  function makeDynamicText(elem, text) {
+    elem.focus(function() {
+      $(this).removeClass("defaultInput");
+      if ($(this).val() == text) {
+        $(this).val("");
+      }
+    });
+    elem.blur(function() {
+      if (!$(this).val()) {
+        $(this).addClass("defaultInput");
+        $(this).val(text);
+      }
+    });
+    elem.blur();
+  }
+
   $(document).ready( function() {
-    $("#username-input").focus();
+    makeDynamicText($("#username_input"), "username");
+    makeDynamicText($("#password_input"), "password");
   });
 })(window.jQuery);
 </script>
@@ -58,29 +76,24 @@ class TeamLogin {
 
 <body>
 
-<div id="logo-div">
-  <img src="images/proco_logo64.png">
+<div id="logo_div">
+  <img src="images/proco_logo300.png" alt="ProCo">
 </div>
 
 <div align="center">
 <h1>Team Log In</h1>
 </div>
 
-<hr>
 <div align="center">
 <?php
   print implode("\n", $bodyHTML);
   if (!isset($_SESSION['login'])) {
 ?>
-<span class="div-title">Warning: Team name is <b>case-sensitive</b>!!!</span>
-<br/>
-<br/>
+<div class="div_title">Warning: Team name is <b>case-sensitive</b>!!!</div>
 <form name="login" method="post" action="login.php">
-<table border="0" width="400">
-<tr><td style="text-align: right;">Team:</td><td><input id="username-input" type="text" name="username" /></td></tr>
-<tr><td style="text-align: right;">Password:</td><td><input type="password" name="password" /></td></tr>
-<tr align="center"><td colspan="2"><input type="submit" value="Log Me In!" /></td></tr>
-</table>
+<div id="input_div"><input id="username_input" type="text" name="username" /></div>
+<div id="input_div"><input id="password_input" type="password" name="password" /></div>
+<div id="input_div"><input type="submit" id="submit" value="Log in!"></input></div>
 </form>
 <?php
   }

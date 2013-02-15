@@ -185,9 +185,13 @@ class JudgeActionHandler {
     $contest_id = $in['contest_id'];
     if ($g_curr_contest) {
       if ($g_curr_contest['contest_id'] == $contest_id) {
-        $res = DBManager::fetchRun($judge_id, $contest_id);
+        $res = DBManager::fetchTask($judge_id, $contest_id);
         if ($res) {
           $out = array_merge($out, $res);
+          $out['division_metadata_hash'] = md5($out['division_metadata']);
+          $out['problem_metadata_hash'] = md5($out['problem_metadata']);
+          unset($out['division_metadata']);
+          unset($out['problem_metadata']);
           $out['task_type'] = 'grade';
         }
         else {
@@ -203,12 +207,50 @@ class JudgeActionHandler {
     }
   }
   
+  public function fetch_run($in, &$out) {
+    global $g_curr_contest;
+    $contest_id = $g_curr_contest['contest_id'];
+    $team_username = $in['team_username'];
+    $problem_alias = $in['problem_alias'];
+    $res = DBManager::fetchRun($contest_id, $team_username, $problem_alias);
+    if ($res) {
+      $out = array_merge($out, $res);
+      $out['contest_type'] = $g_curr_contest['contest_type'];
+    }
+    else {
+      $out['success'] = false;
+    }
+  }
+  
+  public function fetch_task_metadata($in, &$out) {
+    global $g_curr_contest;
+    $problem_id = $in['problem_id'];
+    $division_id = $in['division_id'];
+    $contest_id = $in['contest_id'];
+    $res = DBManager::fetchMetadata($problem_id, $division_id, $contest_id);
+    $out['problem_metadata'] = $res['problem_metadata'];
+    $out['division_metadata'] = $res['division_metadata'];
+    $out['problem_metadata_hash'] = md5($res['problem_metadata']);
+    $out['division_metadata_hash'] = md5($res['division_metadata']);
+  }
+  
   public function submit_judgment($in, &$out) {
     $judgment_id = $in['judgment_id'];
     $judge_id = $in['judge_id'];
     $correct = $in['correct'];
     $metadata = $in['metadata'];
     $out['success'] = (DBManager::updateJudgment($judgment_id, $judge_id, $correct, $metadata) == 1);
+  }
+  
+  public function clear_judgment($in, &$out) {
+    $judgment_id = $in['judgment_id'];
+    $out['success'] = (DBManager::clearJudgment($judgment_id) == 1);
+  }
+  
+  public function clear_judgments($in, &$out) {
+    $problem_id = $in['problem_id'];
+    $contest_id = $in['contest_id'];
+    DBManager::clearJudgments($problem_id, $contest_id);
   }
     
   public function get_posts($in, &$out) {
@@ -227,13 +269,39 @@ class JudgeActionHandler {
     $team_id = $in['team_id'];
     $ref_id = $in['ref_id'];
     $message = $in['message'];
-    $out['success'] = (DBManager::replyPost($contest_id, $team_id, $ref_id, $message) == 1);
+    DBManager::replyPost($contest_id, $team_id, $ref_id, $message);
+    $out['success'] = (DBManager::readPost($ref_id) == 1);
   }
   
   public function broadcast_post($in, &$out) {
     $contest_id = $in['contest_id'];
     $message = $in['message'];
     $out['success'] = (DBManager::broadcastPost($contest_id, $message) == 1);
+  }
+  
+  public function get_runs($in, &$out) {
+    global $k_judgment_none;
+    global $k_judgment_pending;
+    $contest_id = $in['contest_id'];
+    $count = $in['count'];
+    $res = DBmanager::getRuns($contest_id, $count);
+    if ($res) {
+      $out['pending'] = array();
+      $out['done'] = array();
+      foreach ($res as $run) {
+        $run['run_metadata'] = json_decode($run['run_metadata'], true);
+        $run['judgment_metadata'] = json_decode($run['judgment_metadata'], true);
+        if ($run['judgment'] == $k_judgment_none || $run['judgment'] == $k_judgment_pending) {
+          array_push($out['pending'], $run);
+        }
+        else {
+          array_push($out['done'], $run);
+        }
+      }
+    }
+    else {
+      $out['success'] = false;
+    }
   }
 }
 ?>

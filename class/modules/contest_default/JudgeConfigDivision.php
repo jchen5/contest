@@ -20,6 +20,7 @@ class JudgeConfigDivision {
     $.ajaxSetup({
       url: "handle.php",
       type: "post",
+      jsonp: false,
       processData: false,
       dataType: "json"
     });
@@ -101,10 +102,11 @@ select { width: 200px; }
 </head>
 <body>
 <div align="center">
-  <h1>Judge Division Configuration</h1>
-</div>
+<h1>Judge Division Configuration</h1>
+<?php
+print judgeLinkPanel();
+?>
 <hr>
-<div align="center">
 <table>
   <tr>
     <td>

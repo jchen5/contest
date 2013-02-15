@@ -20,6 +20,7 @@ class JudgeConfigTeam {
     $.ajaxSetup({
       url: "handle.php",
       type: "post",
+      jsonp: false,
       processData: false,
       dataType: "json"
     });
@@ -73,10 +74,11 @@ iframe { border: 0px; width: 400px; height: 100px; }
 </head>
 <body>
 <div align="center">
-  <h1>Judge Team Configuration</h1>
-</div>
+<h1>Judge Team Configuration</h1>
+<?php
+print judgeLinkPanel();
+?>
 <hr>
-<div align="center">
 <table>
   <tr>
     <td>

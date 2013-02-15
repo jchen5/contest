@@ -21,6 +21,7 @@ class JudgeConfigProblem {
     $.ajaxSetup({
       url: "handle.php",
       type: "post",
+      jsonp: false,
       processData: false,
       dataType: "json"
     });
@@ -110,7 +111,7 @@ class JudgeConfigProblem {
            .append($("<td>").append(makeInput(problemID, divisionID, contestID, problem, 'title', true)))
            .append($("<td>").append(makeProblemTypeDropdown(problemID, divisionID, contestID, problem, 'problem_type', true)))
            .append($("<td>").append(makeInput(problemID, divisionID, contestID, problem, 'url', false)))
-           .append($("<td>").load("problemmetadata.php", {'data' : $.stringifyJSON({'problem_id' : problemID, 'division_id' : divisionID, 'contest_id' : contestID, 'metadata' : problem['metadata'], 'division_metadata' : problem['division_metadata'], 'problem_type' : problem['problem_type']})}));
+           .append($("<td>").load("problemmetadata.php", {'data' : $.stringifyJSON({'problem_id' : problemID, 'division_id' : divisionID, 'contest_id' : contestID, 'problem_type' : problem['problem_type']})}));
       }
       else {
         row.append($("<td>").attr("colspan", 5).text("Not used"));
@@ -134,14 +135,37 @@ class JudgeConfigProblem {
       $.each(divisionMap, function(divisionID, divisionName) {
         var problem = problemDivisionMap[problemID][divisionID];
         var row = $("<tr>").attr("id", "problem_" + problemID + "_" + divisionID);
-        var problemIDTD = $("<td>");
+        var firstTD = $("<td>");
         if (isFirst) {
-          row.append($("<td>").append(makeInput(problemID, divisionID, contestID, problem, 'order_seq', true)));
-        }
-        else {
-          row.append($("<td>"));
-        }
-        row.append($("<td>").text(divisionMap[divisionID]))
+          firstTD.append(makeInput(problemID, divisionID, contestID, problem, 'order_seq', true));
+<?php
+    if ($g_curr_contest) {
+?>
+          if (contestID == <?= $g_curr_contest['contest_id'] ?>) {
+            firstTD.append("<br>")
+                   .append($("<button>").text("Regrade").click((function(pID, title, cID) {
+                             return function() {
+                               if (confirm("Are you sure you want to regrade all submissions for " + title + "?")) {
+                                 $.ajax({
+                                   data: $.stringifyJSON({'action' : 'clear_judgments', 'contest_id' : cID, 'problem_id' : pID}),
+                                   success: function(ret) {
+                                     if (ret['success']) {
+                                       alert("Successfully cleared all judgments for " + title);
+                                     }
+                                     else {
+                                       alert("Regrade request failed!");
+                                     }
+                                   }
+                                 });
+                               }
+                             };
+                           })(problemID, problem['title'], contestID)));
+          }
+<?php
+    }
+?>      }
+        row.append(firstTD)
+           .append($("<td>").text(divisionMap[divisionID]))
            .append($("<td>").append(makeCheck(problemID, divisionID, contestID, problem['valid'])));
         isFirst = false;
         loadRow(row, problemID, divisionID, $("#contest_id").val(), problem);
@@ -227,10 +251,11 @@ class JudgeConfigProblem {
 </head>
 <body>
 <div align="center">
-  <h1>Judge Problem Configuration</h1>
-</div>
+<h1>Judge Problem Configuration</h1>
+<?php
+print judgeLinkPanel();
+?>
 <hr>
-<div align="center">
 <table>
   <tr>
     <td>
@@ -261,12 +286,15 @@ foreach (DBManager::getContestTypes() as $contest_type) {
           </tr>
         </thead>
         <tbody>
+          <tr>
+          </tr>
         </tbody>
         <tfoot>
           <tr>
             <td colspan="8">
               <button id="new_problem">Create new problem in </button>
               <select id="new_problem_division_id">
+                <option></option>
               </select>
             </td>
           </tr>

@@ -27,7 +27,7 @@ class DebugScoreboardManager {
       $team_map = array();
       foreach ($info['teams'] as $team) {
         $team_map[$team['team_id']] = count($scoreboard);
-        array_push($scoreboard, array('team_id' => intval($team['team_id']), 'alias' => $team['alias'], 'score' => 0, 'time' => 0, 'judgments' => $empty_judgments));
+        array_push($scoreboard, array('team_id' => intval($team['team_id']), 'username' => $team['username'], 'alias' => $team['alias'], 'score' => 0, 'time' => 0, 'judgments' => $empty_judgments));
       }
 
       // whether the team got something correct
@@ -69,6 +69,12 @@ class DebugScoreboardManager {
           if ($a['time'] == $b['time']) {
             return strcmp($a['alias'], $b['time']);
           }
+          if ($a['time'] == 0) {
+            return 1;
+          }
+          if ($b['time'] == 0) {
+            return -1;
+          }
           return $a['time'] > $b['time'] ? 1 : -1;
         }
         return $a['score'] > $b['score'] ? -1 : 1;
@@ -77,11 +83,15 @@ class DebugScoreboardManager {
       $contest_metadata = json_decode($g_curr_contest['metadata'], true);
       $metadata = array('judge_scoreboard' => $scoreboard, 'problems' => $problems);
       $team_scoreboard = array();
-      if (!isset($contest_metadata['time_freeze']) || $g_curr_contest['time_start'] + $contest_metadata['time_freeze'] > time()) {
+      if (!isset($contest_metadata['time_freeze']) || ($g_curr_contest['time_start'] + $contest_metadata['time_freeze'] > time())) {
         foreach ($scoreboard as $team) {
           array_push($team_scoreboard, array('team_id' => $team['team_id'], 'alias' => $team['alias'], 'score' => $team['score'], 'judgments' => $team['judgments']));
         }
         $metadata['team_scoreboard'] = $team_scoreboard;
+      }
+      else {
+        $old_metadata = json_decode(DBManager::getContestDivisionMetadata($contest_id, $division_id), true);
+        $metadata['team_scoreboard'] = $old_metadata['team_scoreboard'];
       }
       DBManager::modifyContestDivisionMetadata($contest_id, $division_id, json_encode($metadata));
       DBManager::commit();
