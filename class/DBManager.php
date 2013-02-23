@@ -57,11 +57,11 @@ class DBManager {
   private static function singleton() {
     if (!isset(self::$singleton)) {
       try {
-        self::$singleton = new PDO('mysql:host=localhost;dbname=contest', 'contest', 'proco', array(PDO::MYSQL_ATTR_FOUND_ROWS => true));
+        self::$singleton = new PDO('mysql:host=localhost;dbname=gunn2013', 'root', 'proco+2013', array(PDO::MYSQL_ATTR_FOUND_ROWS => true));
         self::$singleton->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       }
       catch (PDOException $e) {
-        die();
+        die($e);
       }
     }
     return self::$singleton;
@@ -281,8 +281,10 @@ class DBManager {
     return self::querySelect('select problem_id, problem_type, title, order_seq, status, division_id, url, alias from problems join contests_divisions_problems using (problem_id) where contest_id = ? order by order_seq asc, problem_id asc, division_id asc', $contest_id);
   }
   
-  public static function getContestDivisionProblems($contest_id, $division_id) {
-    return self::querySelect('select problem_id, problem_type, title, order_seq, status, url, alias, metadata, division_metadata from problems join contests_divisions_problems using (problem_id) where contest_id = ? and division_id = ? order by order_seq asc, problem_id asc', $contest_id, $division_id);
+  public static function getContestDivisionProblems($contest_id, $division_id, $ignore_metadata = false) {
+    $metadata_str = "metadata, ";
+    if($ignore_metadata) $metadata_str = "";
+    return self::querySelect('select problem_id, problem_type, title, order_seq, status, url, alias, '.$metadata_str.' division_metadata from problems join contests_divisions_problems using (problem_id) where contest_id = ? and division_id = ? order by order_seq asc, problem_id asc', $contest_id, $division_id);
   }
   
   public static function getContestProblem($contest_id, $problem_id) {

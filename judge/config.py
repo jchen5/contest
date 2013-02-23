@@ -1,8 +1,8 @@
-handle_url = 'http://127.0.0.1/restricted/handle.php'
+handle_url = 'http://gunn.stanfordproco.org/restricted/handle.php'
 
 username = 'proco'
 
-password = 'test'
+password = 'proco+melons'
 
 poll_interval = 3
 

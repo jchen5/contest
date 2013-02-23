@@ -1,0 +1,6 @@
+AuthName "Judge Control Panel"
+AuthType Basic
+AuthUserFile /home/ubuntu/htpasswd
+
+require valid-user
+

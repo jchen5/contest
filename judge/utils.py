@@ -73,27 +73,27 @@ languages = {
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
-                executer_time_limit=1),
+                executer_time_limit=5),
   'cc'   : dict(compiler=Template('g++ -o $src_filebase $src_filename'),
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
-                executer_time_limit=1),
+                executer_time_limit=5),
   'cpp'  : dict(compiler=Template('g++ -o $src_filebase $src_filename'),
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
-                executer_time_limit=1),
+                executer_time_limit=5),
   'java' : dict(compiler=Template('javac -cp . $src_filename'),
                 check_for=Template('$src_filebase.class'),
                 compile_time_limit=20,
                 executer=Template('java -Xmx512M $src_filebase'),
-                executer_time_limit=2),
+                executer_time_limit=10),
   'py'   : dict(compiler=Template('python -mpy_compile $src_filename'),
                 check_for=Template('$src_filebase.pyc'),
                 compile_time_limit=20,
                 executer=Template('python $src_filebase.pyc'),
-                executer_time_limit=3)
+                executer_time_limit=15)
 }
 
 def compile(payload, src_filebase, src_extension, src_filename):

@@ -12,10 +12,11 @@ class TeamProblemsListing {
     $contest_id = $_SESSION['login']['contest_id'];
     $division_id = $_SESSION['login']['division_id'];
     
-    $problems = DBManager::getContestDivisionProblems($contest_id, $division_id);
+    $problems = DBManager::getContestDivisionProblems($contest_id, $division_id, true);
     
     foreach($problems as $problem) {
-      $metadata = json_decode($problem['metadata'], true);
+      $metadata = array();
+//      $metadata = json_decode($problem['metadata'], true);
       if (!$metadata) {
         $metadata = array();
       }
