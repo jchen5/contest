@@ -58,8 +58,8 @@ class DebugScoreboardManager {
 
         if ($judgment['judgment'] != $k_judgment_correct) {
           if (isset($team_correct[$judgment['team_id']][$problem_id]) && $team_correct[$judgment['team_id']][$problem_id] > 1) {
-            $team_correct[$judgment['team_id']][$problem_id]--;
-            $scoreboard[$team_index]['score']--;
+            //$team_correct[$judgment['team_id']][$problem_id]--;
+            //$scoreboard[$team_index]['score']--;
           }
         }
       }

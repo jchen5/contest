@@ -3,13 +3,13 @@ require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' .
 
 $json = json_decode(file_get_contents('php://input'), true);
 
-$ret = array('success' => false);
+$ret = array('success' => false, 'error' => 'Cannot parse request');
 if (isset($json['action'])) {
-  $action = $json['action'];  
-  
+  $action = $json['action'];
+
   try {
     $handler = load(currentContestType(), 'JudgeActionHandler');
-    if (method_exists($handler, $action)) { 
+    if (method_exists($handler, $action)) {
       $ret['success'] = true;
       call_user_func_array(array($handler, $action), array($json, &$ret));
     }

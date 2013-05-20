@@ -57,7 +57,7 @@ class DBManager {
   private static function singleton() {
     if (!isset(self::$singleton)) {
       try {
-        self::$singleton = new PDO('mysql:host=localhost;dbname=gunn2013', 'root', 'proco+2013', array(PDO::MYSQL_ATTR_FOUND_ROWS => true));
+        self::$singleton = new PDO('mysql:host=localhost;dbname=proco2013', 'procosite', 'YOUR_MYSQL_PASSWORD_HERE', array(PDO::MYSQL_ATTR_FOUND_ROWS => true));
         self::$singleton->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       }
       catch (PDOException $e) {

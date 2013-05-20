@@ -18,6 +18,7 @@ class SpeedProblemConfigMetadata extends ProblemConfigMetadata {
       $this->metadata['judge_io'] = array();
       $this->needs_update = true;
     }
+    unset($this->metadata['judge_io']);
   }
   
   public function render() {

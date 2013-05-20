@@ -20,15 +20,15 @@ def _run_tests(task, team_filebase, team_extension, team_filename, metadata, ver
   for index, test_case in enumerate(task['problem_metadata']['judge_io']):
     executer_cmd = utils.languages[team_extension]['executer'].substitute(src_filebase=team_filebase, src_filename=team_filename).split()
     
-    stdin = tempfile.TemporaryFile(bufsize=10485760)
+    stdin = tempfile.TemporaryFile(bufsize=52428800)
     stdin.write(test_case['input'])
     stdin.flush()
     stdin.seek(0)
 
-    stdout = tempfile.TemporaryFile(bufsize=10485760)
+    stdout = tempfile.TemporaryFile(bufsize=52428800)
     
     if verbose:
-      stderr = tempfile.TemporaryFile(bufsize=10485760)
+      stderr = tempfile.TemporaryFile(bufsize=52428800)
     else:
       stderr = open(os.devnull, 'w')
     
