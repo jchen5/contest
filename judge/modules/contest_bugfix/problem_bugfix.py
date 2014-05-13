@@ -19,8 +19,6 @@ def get_clean_lines(code):
 # Checks if two lines are the same, ignoring trailing whitespace
 # TODO: Non-Python files should also ignore leading whitespace
 def has_line_changed(our_line, their_line):
-  print "Compare %s with %s" % (our_line, their_line)
-  print our_line.rstrip() != their_line.rstrip()
   return our_line.rstrip() != their_line.rstrip()
 
 # Check that exactly one line in the file has changed
@@ -34,7 +32,6 @@ def check_changes(our_code, their_code):
     raise GradingException('Illegal removal of lines')
   else:
     num_lines_changed = sum(1 for our_line, their_line in itertools.izip(our_lines, their_lines) if has_line_changed(our_line, their_line))
-    print num_lines_changed
     if num_lines_changed > 1:
       raise GradingException('%d lines changed (only 1 allowed)' % num_lines_changed)
 
