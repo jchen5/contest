@@ -93,6 +93,7 @@ class BugfixJudgeLoadHandler extends JudgeLoadHandler {
               if ($bug !== false) {
                 $judge_bugs[$language] = $bug;
               }
+              print 'Source code for language ' . $language . ' read.<br />';
             }
           }
           $metadata['judge_io'] = $judge_io;
