@@ -17,12 +17,15 @@ def get_clean_lines(code):
   return [line for line in code.strip().split("\n") if line.strip()]
 
 # Checks if two lines are the same, ignoring trailing whitespace
-# TODO: Non-Python files should also ignore leading whitespace
-def has_line_changed(our_line, their_line):
-  return our_line.rstrip() != their_line.rstrip()
+def has_line_changed(our_line, their_line, extension):
+  if extension == "py":
+    return our_line.rstrip() != their_line.rstrip()
+  else:
+    # TODO: Check for semi-colin for Java / C / C++
+    return our_line.strip() != their_line.strip()
 
 # Check that exactly one line in the file has changed
-def check_changes(our_code, their_code):
+def check_changes(our_code, their_code, team_extension):
   our_lines = get_clean_lines(our_code)
   their_lines = get_clean_lines(their_code)
   num_lines_added = len(their_lines) - len(our_lines)
@@ -31,7 +34,11 @@ def check_changes(our_code, their_code):
   elif num_lines_added < 0:
     raise GradingException('Illegal removal of lines')
   else:
-    num_lines_changed = sum(1 for our_line, their_line in itertools.izip(our_lines, their_lines) if has_line_changed(our_line, their_line))
+    num_lines_changed = sum(
+      1
+      for our_line, their_line
+      in itertools.izip(our_lines, their_lines)
+      if has_line_changed(our_line, their_line, team_extension))
     if num_lines_changed > 1:
       raise GradingException('%d lines changed (only 1 allowed)' % num_lines_changed)
 
@@ -41,7 +48,7 @@ def _run_tests(task, team_filebase, team_extension, team_filename, metadata, ver
   time_limit = utils.languages[team_extension]['executer_time_limit'] * task['problem_metadata']['time_multiplier'] 
   num_test_cases = len(task['problem_metadata']['judge_io'])
   
-  check_changes(task['problem_metadata']['judge_bugs'][team_extension], task['payload'])
+  check_changes(task['problem_metadata']['judge_bugs'][team_extension], task['payload'], team_extension)
 
   for index, test_case in enumerate(task['problem_metadata']['judge_io']):
     executer_cmd = utils.languages[team_extension]['executer'].substitute(src_filebase=team_filebase, src_filename=team_filename).split()
