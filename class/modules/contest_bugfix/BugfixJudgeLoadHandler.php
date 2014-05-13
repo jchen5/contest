@@ -2,6 +2,7 @@
 require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'common.php');
 
 class BugfixJudgeLoadHandler extends JudgeLoadHandler {
+  public static $languages = ['c', 'cc', 'cpp', 'java', 'py'];
   
   public function view_submission() {
     if (isset($_REQUEST['contest_id']) && isset($_REQUEST['run_id'])) {
@@ -24,7 +25,8 @@ class BugfixJudgeLoadHandler extends JudgeLoadHandler {
       $problem = DBManager::getContestDivisionProblem($problem_id, $division_id, $contest_id);
       $filename = $problem['alias'];
       $metadata = json_decode($problem['metadata'], true);
-      if (isset($metadata['judge_io']) && count($metadata['judge_io']) > 0) {
+      if (isset($metadata['judge_io']) && count($metadata['judge_io']) > 0
+          && isset($metadata['judge_bugs']) && count($metadata['judge_bugs']) > 0) {
         $zip = new ZipArchive;
         $tmpname = tempnam('/tmp', 'bugfixzip');
         if ($zip->open($tmpname, ZipArchive::CREATE)) {
@@ -34,6 +36,12 @@ class BugfixJudgeLoadHandler extends JudgeLoadHandler {
             $zip->addFromString($name, $io['input']);
             $name = sprintf('%s.out%02d', $filename, $i);
             $zip->addFromString($name, $io['output']);
+          }
+          foreach (self::$languages as $language) {
+            if (isset($metadata['judge_bugs'][$language])) {
+              $name = sprintf("%s.%s", $filename, $language);
+              $zip->addFromString($name, $metadata['judge_bugs'][$language]);
+            }
           }
           $zip->close();
           $this->writeDownloadHeader($filename . '.zip', filesize($tmpname));
@@ -56,6 +64,7 @@ class BugfixJudgeLoadHandler extends JudgeLoadHandler {
         $metadata = json_decode($problem['metadata'], true);
         
         $judge_io = array();
+        $judge_bugs = array();
         $zip = new ZipArchive;
         if ($zip->open($tmpname)) {
           for ($i = 1; ; $i++) {
@@ -78,8 +87,16 @@ class BugfixJudgeLoadHandler extends JudgeLoadHandler {
             else {
               array_push($judge_io, array('input' => $input, 'output' => $output));
             }
+            foreach (self::$languages as $language) {
+              $bug_name = sprintf("%s.%s", $filename, $language);
+              $bug = $zip->getFromName($bug_name);
+              if ($bug !== false) {
+                $judge_bugs[$language] = $bug;
+              }
+            }
           }
           $metadata['judge_io'] = $judge_io;
+          $metadata['judge_bugs'] = $judge_bugs;
           DBManager::modifyProblem($problem_id, 'metadata', json_encode($metadata));
         }
       }
