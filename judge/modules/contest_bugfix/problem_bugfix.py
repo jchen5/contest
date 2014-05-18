@@ -13,7 +13,7 @@ from utils import GradingException
 import common
 
 MAX_LINE_EDIT_DISTANCE = 200
-CONTROL_FLOW_KEYWORDS = ['if', 'else', 'for', 'while', 'do', 'switch'] # for java and c/c++
+CONTROL_FLOW_KEYWORDS = ['if', 'for', 'while', 'do', 'switch'] # for java and c/c++
 
 # Splits a source code string into lines, removing empty lines and trailing whitespace
 def get_clean_lines(code):
