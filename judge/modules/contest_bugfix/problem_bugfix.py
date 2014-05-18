@@ -155,7 +155,7 @@ def check_changes(our_code, their_code, team_extension):
       in itertools.izip(our_lines, their_lines)
       if has_line_changed(our_line, their_line, team_extension)]
     if len(lines_changed) > 1:
-      raise GradingException('%d lines changed (only 1 allowed)' % len(lines_changed))
+      raise GradingException('Changed more than one line')
     if len(lines_changed) == 1:
       our_line, their_line = lines_changed[0]
       check_line_change(our_line, their_line, team_extension)
