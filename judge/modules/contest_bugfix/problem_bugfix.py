@@ -13,7 +13,7 @@ from utils import GradingException
 import common
 
 MAX_LINE_EDIT_DISTANCE = 200
-CONTROL_FLOW_KEYWORDS = ['if', 'for', 'while', 'do', 'switch'] # for java and c/c++
+CONTROL_FLOW_KEYWORDS = ['if', 'else', 'for', 'while', 'do', 'switch'] # for java and c/c++
 
 # Splits a source code string into lines, removing empty lines and trailing whitespace
 def get_clean_lines(code):
@@ -79,6 +79,8 @@ def check_line_change(our_line, their_line, extension):
   controlFlowKeywordsCount = 0
   for keyword in CONTROL_FLOW_KEYWORDS:
     controlFlowKeywordsCount += their_line.count(keyword)
+  if their_line.find('else') != -1 and their_line.find('if') != -1:
+    controlFlowKeywordsCount -= 1
   if controlFlowKeywordsCount > 1:
     raise GradingException('More than one control flow statement in modified line')
   semicolonCount = their_line.count(';')
