@@ -12,6 +12,8 @@ import utils
 from utils import GradingException
 import common
 
+MAX_LINE_EDIT_DISTANCE = 200
+
 # Splits a source code string into lines, removing empty lines
 def get_clean_lines(code):
   return [line for line in code.strip().split("\n") if line.strip()]
@@ -23,10 +25,35 @@ def has_line_changed(our_line, their_line, extension):
   else:
     return our_line.strip() != their_line.strip()
 
+def levenshtein(s1, s2):
+  # Source: http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+  
+  if len(s1) < len(s2):
+    return levenshtein(s2, s1)
+ 
+  # len(s1) >= len(s2)
+  if len(s2) == 0:
+    return len(s1)
+ 
+  previous_row = xrange(len(s2) + 1)
+  for i, c1 in enumerate(s1):
+    current_row = [i + 1]
+    for j, c2 in enumerate(s2):
+      insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
+      deletions = current_row[j] + 1       # than s2
+      substitutions = previous_row[j] + (c1 != c2)
+      current_row.append(min(insertions, deletions, substitutions))
+    previous_row = current_row
+ 
+  return previous_row[-1]
+
 def check_line_change(our_line, their_line, extension):
-  pass
-  # TODO
-  #print 'line to check: "%s" -> "%s"' % (our_line, their_line)
+  print 'line to check: "%s" -> "%s"' % (our_line, their_line) # DEBUG
+  editDist = levenshtein(our_line, their_line)
+  if editDist > MAX_LINE_EDIT_DISTANCE:
+    print editDist # DEBUG
+    raise GradingException('Changed more than %d characters' % MAX_LINE_EDIT_DISTANCE)
+  
 
 # Check that exactly one line in the file has changed
 def check_changes(our_code, their_code, team_extension):
