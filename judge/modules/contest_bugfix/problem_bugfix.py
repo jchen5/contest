@@ -13,15 +13,16 @@ from utils import GradingException
 import common
 
 MAX_LINE_EDIT_DISTANCE = 200
+CONTROL_FLOW_KEYWORDS = ['if', 'else', 'for', 'while', 'do', 'switch'] # for java and c/c++
 
-# Splits a source code string into lines, removing empty lines
+# Splits a source code string into lines, removing empty lines and trailing whitespace
 def get_clean_lines(code):
-  return [line for line in code.strip().split("\n") if line.strip()]
+  return [line.rstrip() for line in code.strip().split("\n") if line.strip()]
 
-# Checks if two lines are the same, ignoring trailing whitespace
+# Checks if two lines are the same
 def has_line_changed(our_line, their_line, extension):
   if extension == "py":
-    return our_line.rstrip() != their_line.rstrip()
+    return our_line != their_line # trailing whitespace is already stripped
   else:
     return our_line.strip() != their_line.strip()
 
@@ -47,13 +48,74 @@ def levenshtein(s1, s2):
  
   return previous_row[-1]
 
+def raise_unexpected_checker_error(code):
+  # For errors in checking code diff that should never occur
+  raise GradingException('Illegal syntax? (Error code: %s) Looks like you either have more than one statement in your modified line, or are using very strange/bad syntax. Please submit a clarification request if you think this judgement is erroneous.' % str(code))
+
+def find_matching_close_paren(line, parenStart):
+  parenDepth = 0
+  for i in range(parenStart, len(line)):
+    ch = line[i]
+    if ch == '(':
+      parenDepth += 1
+    elif ch == ')':
+      parenDepth -= 1
+      if parenDepth == 0:
+        return i
+  return -1
+
 def check_line_change(our_line, their_line, extension):
-  print 'line to check: "%s" -> "%s"' % (our_line, their_line) # DEBUG
+  #print 'line to check'
+  #print our_line
+  #print '->'
+  #print their_line
+  
   editDist = levenshtein(our_line, their_line)
   if editDist > MAX_LINE_EDIT_DISTANCE:
-    print editDist # DEBUG
     raise GradingException('Changed more than %d characters' % MAX_LINE_EDIT_DISTANCE)
+
+  if extension == 'py':
+    return
+  controlFlowKeywordsCount = 0
+  for keyword in CONTROL_FLOW_KEYWORDS:
+    controlFlowKeywordsCount += their_line.count(keyword)
+  if controlFlowKeywordsCount > 1:
+    raise GradingException('More than one control flow statement in modified line')
+  semicolonCount = their_line.count(';')
+
+  hasFor = their_line.find('for') != -1
+  if not hasFor:
+    if semicolonCount + controlFlowKeywordsCount > 1:
+      raise GradingException('More than one statement in modified line')
+    return
+
+  # TODO: this does not properly handle do-while loops, since the while will
+  # have a semicolon afterwards. But this currently isn't an issue because we
+  # don't have any do-while loops.
+
+  # TODO: this does not properly handle the for-loop check because the
+  # correct way to do this is by actually parsing: e.g. strings and
+  # comments can cause problems.
   
+  # Check for semicolons enclosed within for loop parens
+  forIdx = their_line.find('for')
+  if their_line.find(';', 0, forIdx) != -1:
+    raise GradingException('More than one statement in modified line')
+  if their_line.find('(', 0, forIdx) != -1:
+    raise_unexpected_checker_error('ELP')
+  parenStart = their_line.find('(', forIdx)
+  if parenStart == -1:
+    raise_unexpected_checker_error('MLP')
+
+  parenEnd = find_matching_close_paren(their_line, parenStart)
+  if parenEnd == -1:
+     raise_unexpected_checker_error('MRP')
+  semicolonsWithinFor = their_line.count(';', parenStart, parenEnd)
+  if semicolonsWithinFor != 0 and semicolonsWithinFor != 3:
+     raise_unexpected_checker_error('USC')
+  #print forIdx, parenStart, parenEnd, semicolonCount, semicolonsWithinFor
+  if semicolonCount - semicolonsWithinFor > 0:
+     raise GradingException('More than one statement in modified line')
 
 # Check that exactly one line in the file has changed
 def check_changes(our_code, their_code, team_extension):
