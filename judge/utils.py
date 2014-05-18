@@ -69,17 +69,17 @@ def import_module(contest_type, problem_type):
   raise Exception('No module found for %s.%s' % (contest_type, problem_type))
   
 languages = {
-  'c'    : dict(compiler=Template('gcc -o $src_filebase $src_filename'),
+  'c'    : dict(compiler=Template('gcc -O2 -o $src_filebase $src_filename'),
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
                 executer_time_limit=3),
-  'cc'   : dict(compiler=Template('g++ -o $src_filebase $src_filename'),
+  'cc'   : dict(compiler=Template('g++ -O2 -o $src_filebase $src_filename'),
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
                 executer_time_limit=3),
-  'cpp'  : dict(compiler=Template('g++ -o $src_filebase $src_filename'),
+  'cpp'  : dict(compiler=Template('g++ -O2 -o $src_filebase $src_filename'),
                 check_for=Template('$src_filebase'),
                 compile_time_limit=20,
                 executer=Template('./$src_filebase'),
