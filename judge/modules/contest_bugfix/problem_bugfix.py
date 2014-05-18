@@ -21,26 +21,55 @@ def has_line_changed(our_line, their_line, extension):
   if extension == "py":
     return our_line.rstrip() != their_line.rstrip()
   else:
-    # TODO: Check for semi-colin for Java / C / C++
     return our_line.strip() != their_line.strip()
+
+def check_line_change(our_line, their_line, extension):
+  pass
+  # TODO
+  #print 'line to check: "%s" -> "%s"' % (our_line, their_line)
 
 # Check that exactly one line in the file has changed
 def check_changes(our_code, their_code, team_extension):
   our_lines = get_clean_lines(our_code)
   their_lines = get_clean_lines(their_code)
   num_lines_added = len(their_lines) - len(our_lines)
-  if num_lines_added > 0:
-    raise GradingException('Illegal insertion of lines')
-  elif num_lines_added < 0:
-    raise GradingException('Illegal removal of lines')
-  else:
-    num_lines_changed = sum(
-      1
+  if num_lines_added > 1:
+    raise GradingException('Inserted more than one line')
+  if num_lines_added < -1:
+    raise GradingException('Removed more than one line')
+  if num_lines_added != 0:
+    if len(our_lines) < len(their_lines):
+      shorter_lines, longer_lines = our_lines, their_lines
+    else:
+      shorter_lines, longer_lines = their_lines, our_lines
+
+    # Find the first line that differs
+    for i in xrange(len(shorter_lines)):
+      if has_line_changed(shorter_lines[i], longer_lines[i], team_extension):
+        diffLine = i
+        break
+    else:
+      diffLine = len(shorter_lines)
+
+    # Check that no other lines differ
+    for i in xrange(diffLine, len(shorter_lines)):
+      if has_line_changed(shorter_lines[i], longer_lines[i + 1], team_extension):
+        raise GradingException('Changed more than one line')
+
+    if len(our_lines) < len(their_lines):
+      # Check that insertion is OK
+      check_line_change('', longer_lines[diffLine], team_extension)
+  else: # num_lines_added == 0
+    lines_changed = [
+      (our_line, their_line)
       for our_line, their_line
       in itertools.izip(our_lines, their_lines)
-      if has_line_changed(our_line, their_line, team_extension))
-    if num_lines_changed > 1:
-      raise GradingException('%d lines changed (only 1 allowed)' % num_lines_changed)
+      if has_line_changed(our_line, their_line, team_extension)]
+    if len(lines_changed) > 1:
+      raise GradingException('%d lines changed (only 1 allowed)' % len(lines_changed))
+    if len(lines_changed) == 1:
+      our_line, their_line = lines_changed[0]
+      check_line_change(our_line, their_line, team_extension)
 
 def _run_tests(task, team_filebase, team_extension, team_filename, metadata, verbose):
   '''Execute judge test cases.'''
