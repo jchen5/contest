@@ -111,7 +111,7 @@ def check_line_change(our_line, their_line, extension):
   if parenEnd == -1:
      raise_unexpected_checker_error('MRP')
   semicolonsWithinFor = their_line.count(';', parenStart, parenEnd)
-  if semicolonsWithinFor != 0 and semicolonsWithinFor != 3:
+  if semicolonsWithinFor != 0 and semicolonsWithinFor != 2:
      raise_unexpected_checker_error('USC')
   #print forIdx, parenStart, parenEnd, semicolonCount, semicolonsWithinFor
   if semicolonCount - semicolonsWithinFor > 0:
